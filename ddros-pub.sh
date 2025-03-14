@@ -128,16 +128,11 @@ DNSSVR="1.1.1.1,1.0.0.1"
 #######download and extract ROS image zip file
 #ros version
 #ROS_VER="6.49.15"
-ROS_VER=`curl -sL https://download.mikrotik.com/routeros/latest-stable-and-long-term.rss | awk '/\[stable\]/ {print $2}'`
-echo "ROS image version: $ROS_VER"
+ROS_VER=` curl -sL https://download.mikrotik.com/routeros/latest-stable-and-long-term.rss | awk '/\[stable\]/ {print $2}' `
+echo "ROS image version : $ROS_VER"
 
-# 构建正确的下载URL
-DOWNLOAD_URL="https://download.mikrotik.com/routeros/${ROS_VER}/chr-${ROS_VER}.img.zip"
-echo "Downloading from: $DOWNLOAD_URL"
-
-# 下载镜像文件
-wget "$DOWNLOAD_URL" -O chr.img.zip
-
+#download image zip file
+wget https://download.mikrotik.com/routeros/"${ROS_VER}"/chr-"${ROS_VER}".img.zip
 [ $? -ne 0 ] && echo 'ROS image zip file download failed!' && exit 1
 
 #extract image zip file to ramfs
