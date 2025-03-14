@@ -128,9 +128,9 @@ DNSSVR="1.1.1.1,1.0.0.1"
 #######download and extract ROS image zip file
 #ros version
 #ROS_VER="6.49.15"
-ROS_VER=` curl -sL https://download.mikrotik.com/routeros/latest-stable-and-long-term.rss | awk '/\[stable\]/ {print $2}' `
-echo "ROS image version : $ROS_VER"
-
+RSS_TMP_FILE="/tmp/mikrotik_rss.xml"
+curl -sL https://download.mikrotik.com/routeros/latest-stable-and-long-term.rss > "$RSS_TMP_FILE"
+ROS_VER=$(grep -A5 "\[stable\]" "$RSS_TMP_FILE" | grep -o "RouterOS [0-9]\+\.[0-9]\+\.[0-9]\+" | head -1 | cut -d" " -f2)
 #download image zip file
 wget https://download.mikrotik.com/routeros/$ROS_VER/chr-$ROS_VER.img.zip -O chr.img.zip
 [ $? -ne 0 ] && echo 'ROS image zip file download failed!' && exit 1
