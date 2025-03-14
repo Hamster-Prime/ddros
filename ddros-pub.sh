@@ -132,7 +132,7 @@ ROS_VER=` curl -sL https://download.mikrotik.com/routeros/latest-stable-and-long
 echo "ROS image version : $ROS_VER"
 
 #download image zip file
-wget https://download.mikrotik.com/routeros/${ROS_VER}"/chr-"${ROS_VER}.img.zip
+wget https://download.mikrotik.com/routeros/$ROS_VER/chr-$ROS_VER.img.zip -O chr.img.zip
 [ $? -ne 0 ] && echo 'ROS image zip file download failed!' && exit 1
 
 #extract image zip file to ramfs
