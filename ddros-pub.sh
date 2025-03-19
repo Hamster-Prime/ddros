@@ -126,14 +126,47 @@ DNSSVR="1.1.1.1,1.0.0.1"
 #esac
 
 #######download and extract ROS image zip file
-#ros version
-#ROS_VER="6.49.15"
+# 创建临时文件存储RSS内容
 RSS_TMP_FILE="/tmp/mikrotik_rss.xml"
 curl -sL https://download.mikrotik.com/routeros/latest-stable-and-long-term.rss > "$RSS_TMP_FILE"
+
+# 提取最新的稳定版本号 (7.x)
 ROS_VER=$(grep -A5 "\[stable\]" "$RSS_TMP_FILE" | grep -o "RouterOS [0-9]\+\.[0-9]\+\.[0-9]\+" | head -1 | cut -d" " -f2)
-#download image zip file
-wget https://download.mikrotik.com/routeros/$ROS_VER/chr-$ROS_VER.img.zip -O chr.img.zip
-[ $? -ne 0 ] && echo 'ROS image zip file download failed!' && exit 1
+
+# 如果没有找到版本号，使用预设的版本
+if [ -z "$ROS_VER" ]; then
+  ROS_VER="7.15.1"
+  echo "Failed to get RouterOS version, using hardcoded version: $ROS_VER"
+else
+  echo "ROS image version: $ROS_VER"
+fi
+
+# 下载镜像文件
+echo "Downloading RouterOS version $ROS_VER"
+wget "https://download.mikrotik.com/routeros/$ROS_VER/chr-$ROS_VER.img.zip" -O chr.img.zip
+if [ $? -ne 0 ]; then
+  echo "ROS image zip file download failed! Trying alternative version..."
+  ROS_VER="7.10.2"
+  echo "Using fallback version: $ROS_VER"
+  wget "https://download.mikrotik.com/routeros/$ROS_VER/chr-$ROS_VER.img.zip" -O chr.img.zip
+  if [ $? -ne 0 ]; then
+    echo "ROS image zip file download failed!"
+    exit 1
+  fi
+fi
+
+# 检查下载的文件大小，确保不是空文件或错误页面
+FILE_SIZE=$(stat -c%s "chr.img.zip" 2>/dev/null || stat -f%z "chr.img.zip")
+if [ -z "$FILE_SIZE" ] || [ "$FILE_SIZE" -lt 10000 ]; then
+  echo "Downloaded file is too small, likely not a valid RouterOS image."
+  echo "Trying with known working version 7.10.2"
+  ROS_VER="7.10.2"
+  wget "https://download.mikrotik.com/routeros/$ROS_VER/chr-$ROS_VER.img.zip" -O chr.img.zip
+  if [ $? -ne 0 ]; then
+    echo "ROS image zip file download failed!"
+    exit 1
+  fi
+fi
 
 #extract image zip file to ramfs
 mkdir -p /mnt/img
