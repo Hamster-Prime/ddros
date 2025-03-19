@@ -1,15 +1,5 @@
 #!/bin/bash
 
-# Ask if want to customize RouterOS version
-read -r -p "Do you want to customize the RouterOS version? (y/n): " customize_version
-if [[ "$customize_version" =~ ^[Yy]$ ]]; then
-    read -r -p "Enter the RouterOS version (e.g., 7.15.1): " ROS_VER
-    echo "Will install RouterOS version: $ROS_VER"
-else
-    echo "Will download the latest stable version"
-    ROS_VER=""
-fi
-
 ###install needed command
 echo '---install curl wget gzip---'
 if [ -f /etc/os-release ]; then
@@ -137,13 +127,10 @@ DNSSVR="1.1.1.1,1.0.0.1"
 
 #######download and extract ROS image zip file
 #ros version
-if [ -z "$ROS_VER" ]; then
-    RSS_TMP_FILE="/tmp/mikrotik_rss.xml"
-    curl -sL https://download.mikrotik.com/routeros/latest-stable-and-long-term.rss > "$RSS_TMP_FILE"
-    ROS_VER=$(grep -A5 "\[stable\]" "$RSS_TMP_FILE" | grep -o "RouterOS [0-9]\+\.[0-9]\+\.[0-9]\+" | head -1 | cut -d" " -f2)
-    echo "Using latest stable version: $ROS_VER"
-fi
-
+#ROS_VER="6.49.15"
+RSS_TMP_FILE="/tmp/mikrotik_rss.xml"
+curl -sL https://download.mikrotik.com/routeros/latest-stable-and-long-term.rss > "$RSS_TMP_FILE"
+ROS_VER=$(grep -A5 "\[stable\]" "$RSS_TMP_FILE" | grep -o "RouterOS [0-9]\+\.[0-9]\+\.[0-9]\+" | head -1 | cut -d" " -f2)
 #download image zip file
 wget https://download.mikrotik.com/routeros/$ROS_VER/chr-$ROS_VER.img.zip -O chr.img.zip
 [ $? -ne 0 ] && echo 'ROS image zip file download failed!' && exit 1
